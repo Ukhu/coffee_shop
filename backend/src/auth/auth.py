@@ -23,6 +23,9 @@ class AuthError(Exception):
 ## Auth Header
 
 def get_token_auth_header():
+    '''
+      Gets JWT token from the request header
+    '''
 
     auth_token = request.headers.get('Authorization', None)
 
@@ -57,6 +60,15 @@ def get_token_auth_header():
     return token
 
 def check_permissions(permission, payload):
+    '''
+      Checks that the user has the appropiate permission to access the endpoint
+
+      Required Parameters:
+
+      - permission: a string containing the necessary permission for this route e.g 'get:drinks'
+      - payload: the JWT payload returned from the verify_decode_jwt(token) function
+    '''
+
     if 'permissions' not in payload:
         print('PERMISSIONS NOT FOUND HERE!!!!')
         raise AuthError({
@@ -73,6 +85,14 @@ def check_permissions(permission, payload):
     return True
         
 def verify_decode_jwt(token):
+    '''
+      Verifies the claims of the JWT token to ensure it is from the Auth0 source
+
+      Required Parameters:
+
+      - token: JWT token gotten from the 'Authorization' header
+    '''
+
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
@@ -127,6 +147,9 @@ def verify_decode_jwt(token):
             }, 401)
 
 def requires_auth(permission=''):
+    '''
+      Decorator function to handle authentication for specific routes
+    '''
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
